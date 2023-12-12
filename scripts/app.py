@@ -4,7 +4,7 @@ import time
 import base64
 from PIL import Image
 from io import BytesIO
-
+import serial        #if error then use command:: pip install pyserial
 import cv2
 import mediapipe as mp
 import csv 
@@ -18,7 +18,7 @@ import math
 app = Flask(__name__)
 app.config['MYSQL_HOST'] = 'localhost'
 app.config['MYSQL_USER'] = 'root'
-app.config['MYSQL_PASSWORD'] = 'parv'
+app.config['MYSQL_PASSWORD'] = ''
 
 
 app.config['MYSQL_DB'] ='pose_estimation'
@@ -28,6 +28,10 @@ CORS(app, support_credentials=True)
 
 cwd = os.getcwd()
 path1 = cwd+'/static/refImages'
+
+ser = serial.Serial();
+ser.baudrate = 9600
+ser.port = "COM12"
 
 def imagePoints(filename, username):
 
@@ -115,7 +119,12 @@ def main():
     mp_pose = mp.solutions.pose
 
     # Open a video capture object
-    cap = cv2.VideoCapture(0)
+    # cap = cv2.VideoCapture(0)
+
+    cam_port = 0
+    url = 'https://10.1.130.72:8080/video'        #enter the IP address of the IP Webcam app
+
+    cap = cv2.VideoCapture(url) 
 
     # Check if the webcam is opened correctly
     if not cap.isOpened():
@@ -189,6 +198,7 @@ def main():
                         if body_part:
                             # Suggestion for adjusting the pose
                             suggestion = f"Suggestion for {body_part}:"
+
 
                             # Analyze the difference in coordinates
                             for coord_type, (stored_coord, detected_coord) in zip(['x', 'y', 'z'], zip(stored, detected)):
